@@ -1,2 +1,6 @@
-# graphql-express-seed
-Project using graphql express ts
+# GRAPHQL EXPRESS STARTER
+
+## Description
+
+- GraphQL express server using typescript get poke data from poke api.
+
