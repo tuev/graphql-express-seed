@@ -1,0 +1,30 @@
+stages:
+  - test
+language: node_js
+before_script:
+  - npm install
+node_js:
+  - 10
+cache:
+  directories:
+    - node_modules
+
+addons:
+  apt:
+    packages:
+      - libnotify-bin
+
+services:
+  - mongodb
+jobs:
+  include:
+    - stage: test
+      install: *1
+      script: npm run test
+      before_install: true
+
+
+# after_success:
+#   - bash <(curl -s https://codecov.io/bash) -t 4cb53494-3220-419f-9e28-5f69934a9b7e
+before_deploy:
+  - rm -rf node_modules
