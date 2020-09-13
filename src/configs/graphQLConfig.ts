@@ -1,11 +1,15 @@
-import { BACKGROUND_COLOR_LOG, COLOR_LOG } from './../common/constant/config'
 import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express'
-import { Application } from 'express'
-import { createServer } from 'http2'
+import { Request , Application } from 'express'
+
 import { merge } from 'lodash'
 import { PubSub } from 'graphql-subscriptions'
 import depthLimit from 'graphql-depth-limit'
 import chalk from 'chalk'
+import { Server as HttpServer } from 'http'
+import { Http2Server, Http2SecureServer } from 'http2'
+import { Server as HttpsServer } from 'https'
+import WebSocket from 'ws'
+import { BACKGROUND_COLOR_LOG, COLOR_LOG } from './../common/constant/config'
 
 /**
  * Pubsub can be replaced by some below method:
@@ -22,28 +26,30 @@ import chalk from 'chalk'
 export const pubsub = new PubSub()
 const logConsole = chalk.bgHex(BACKGROUND_COLOR_LOG).hex(COLOR_LOG)
 
-const createGraphQLServer = (
-  app: Application,
-  configs: ApolloServerExpressConfig
-): ApolloServer => {
-  const graphQLServer = new ApolloServer(
-    merge(configs, {
-      context: (req: Request) => ({ ...req, pubsub }),
-      validationRules: [depthLimit(3)],
-      subscriptions: {
-        onConnect: () => {
-          // TODO: add authorization wsToken on connectionParams
-          logConsole('🚀 ws on connect')
-        },
-        onDisconnect: () => {
-          logConsole('🚀 ws onDisconnect ')
+const createGraphQLServer = (app: Application,
+  server:
+    | HttpServer
+    | HttpsServer
+    | Http2Server
+    | Http2SecureServer
+    | WebSocket.Server,
+  configs: ApolloServerExpressConfig): ApolloServer => {
+  const graphQLServer = new ApolloServer(merge({
+        context: (req: Request) => ({ ...req, pubsub }),
+        validationRules: [depthLimit(3)],
+        subscriptions: {
+          onConnect: () => {
+            // TODO: add authorization wsToken on connectionParams
+            logConsole('🚀 ws on connect')
+          },
+          onDisconnect: () => {
+            logConsole('🚀 ws onDisconnect ')
+          },
         },
       },
-    })
-  )
+      configs))
 
   graphQLServer.applyMiddleware({ app })
-  const server = createServer(app)
   graphQLServer.installSubscriptionHandlers(server)
 
   return graphQLServer
