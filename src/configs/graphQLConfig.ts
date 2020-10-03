@@ -1,15 +1,12 @@
 import { ApolloServer, ApolloServerExpressConfig } from 'apollo-server-express'
-import { Request , Application } from 'express'
+import { Request, Application } from 'express'
 
 import { merge } from 'lodash'
 import { PubSub } from 'graphql-subscriptions'
 import depthLimit from 'graphql-depth-limit'
 import chalk from 'chalk'
-import { Server as HttpServer } from 'http'
-import { Http2Server, Http2SecureServer } from 'http2'
-import { Server as HttpsServer } from 'https'
-import WebSocket from 'ws'
 import { BACKGROUND_COLOR_LOG, COLOR_LOG } from './../common/constant/config'
+import schema from '../schema'
 
 /**
  * Pubsub can be replaced by some below method:
@@ -27,14 +24,11 @@ export const pubsub = new PubSub()
 const logConsole = chalk.bgHex(BACKGROUND_COLOR_LOG).hex(COLOR_LOG)
 
 const createGraphQLServer = (app: Application,
-  server:
-    | HttpServer
-    | HttpsServer
-    | Http2Server
-    | Http2SecureServer
-    | WebSocket.Server,
-  configs: ApolloServerExpressConfig): ApolloServer => {
+  configs: ApolloServerExpressConfig = {}): ApolloServer => {
   const graphQLServer = new ApolloServer(merge({
+        schema,
+        tracing: true,
+        cacheControl: true,
         context: (req: Request) => ({ ...req, pubsub }),
         validationRules: [depthLimit(3)],
         subscriptions: {
@@ -50,8 +44,6 @@ const createGraphQLServer = (app: Application,
       configs))
 
   graphQLServer.applyMiddleware({ app })
-  graphQLServer.installSubscriptionHandlers(server)
-
   return graphQLServer
 }
 
