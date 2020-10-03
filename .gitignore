@@ -30,6 +30,8 @@ bower_components
 # Editors
 .idea
 .vscode
+.eslintcache
+blob/*
 *.iml
 modules.xml
 *.ipr
