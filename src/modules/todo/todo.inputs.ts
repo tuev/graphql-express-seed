@@ -10,7 +10,14 @@ export class TodoInput {
   content!: string
 }
 
-export class TodoUpdate extends TodoInput {
+@InputType()
+export class TodoUpdate {
   @Field()
   id!: ObjectId
+
+  @Field({ nullable: true })
+  title?: string
+
+  @Field({ nullable: true })
+  content?: string
 }

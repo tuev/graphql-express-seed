@@ -16,9 +16,11 @@ class TodoService {
   }
 
   public async updateTodo(todo: TodoUpdate): Promise<Todo | null> {
-    return TodoModel.findByIdAndUpdate(todo.id,
-      { title: todo.title, content: todo.content },
-      { new: true })
+    const updateData = {
+      ...(todo.title ? { title: todo.title } : {}),
+      ...(todo.content ? { content: todo.content } : {}),
+    }
+    return TodoModel.findByIdAndUpdate(todo.id, updateData, { new: true })
   }
 
   public async deleteTodo(id: ObjectId): Promise<Todo | null> {
